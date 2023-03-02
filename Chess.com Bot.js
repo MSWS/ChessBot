@@ -231,7 +231,7 @@ function main() {
                 }
             }
         }
-        if ($(".coordinates").children().first().text() === 1)
+        if ($(".coordinates").children().first().text() === "1")
             str2 = str2 + " b " + wk + wq + bk + bq;
         else
             str2 = str2 + " w " + wk + wq + bk + bq;
