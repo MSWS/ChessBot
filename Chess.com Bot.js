@@ -23,6 +23,9 @@
 
 "use strict";
 
+// eslint-disable-next-line no-var, camelcase
+var GM_getResourceText, $, GreasyFork;
+
 const currentVersion = "1.2"; // Sets the current version
 
 let isThinking = false;
@@ -108,7 +111,7 @@ function main() {
         }
         str2 = str2.slice(0, -1);
 
-        let color = "";
+        // let color = "";
         let bq = "0", bk = bq, wq = bq, wk = bq;
         const move = $("vertical-move-list")
             .children();
@@ -235,7 +238,7 @@ function main() {
         let res1 = response.substring(0, 2);
         let res2 = response.substring(2, 4);
 
-        if (mylets.autoMove == true)
+        if (mylets.autoMove)
             myFunctions.movePiece(res1, res2);
 
         isThinking = false;
@@ -340,7 +343,7 @@ function main() {
     };
 
     myFunctions.autoRun = function (lstValue) {
-        if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs())
+        if ($("chess-board")[0].game.getTurn() === $("chess-board")[0].game.getPlayingAs())
             myFunctions.runChessEngine(lstValue);
     };
 
@@ -437,7 +440,7 @@ function main() {
      */
     function other(delay) {
         const endTime = Date.now() + delay;
-        let timer = setInterval(() => {
+        const timer = setInterval(() => {
             if (Date.now() >= endTime) {
                 myFunctions.autoRun(lastValue);
                 canGo = true;
@@ -455,31 +458,30 @@ function main() {
         const code = await GF.get().script().code(460208); // Get code
         const version = GF.parseScriptCodeMeta(code).filter(e => e.meta === "@version")[0].value; // filtering array and getting value of @version
 
-        if (currentVersion !== version) {
+        if (currentVersion !== version)
             alert("A new version is available!");
-        }
     }
 
     getVersion();
 
-    const waitForChessBoard = setInterval(() => {
+    setInterval(() => {
         if (loaded) {
             mylets.autoRun = $("#autoRun")[0].checked;
             mylets.autoMove = $("#autoMove")[0].checked;
             mylets.delay = $("#timeDelay")[0].value;
             mylets.isThinking = isThinking;
             myFunctions.spinner();
-            if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs()) myTurn = true; else myTurn = false;
+            if ($("chess-board")[0].game.getTurn() === $("chess-board")[0].game.getPlayingAs()) myTurn = true; else myTurn = false;
         } else
             myFunctions.loadEx();
 
         if (!engine.engine)
             myFunctions.loadChessEngine();
 
-        if (mylets.autoRun == true && canGo == true && isThinking == false && myTurn) {
+        if (mylets.autoRun && canGo && !isThinking && myTurn) {
             console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
             canGo = false;
-            const currentDelay = mylets.delay != undefined ? mylets.delay * 1000 : 10;
+            const currentDelay = mylets.delay !== undefined ? mylets.delay * 1000 : 10;
             other(currentDelay);
         }
     }, 100);
