@@ -442,6 +442,8 @@ function main() {
     function other(delay) {
         const endTime = Date.now() + delay;
         const timer = setInterval(() => {
+            if(canGo)
+                return;
             if (Date.now() >= endTime) {
                 myFunctions.autoRun(lastValue);
                 canGo = true;
