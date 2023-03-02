@@ -28,7 +28,7 @@ const currentVersion = "1.3"; // Sets the current version
 let isThinking = false;
 let canGo = true;
 let myTurn = false;
-
+let offeredMove = false;
 
 /**
  *
@@ -248,6 +248,7 @@ function main() {
             myFunctions.movePiece(res1, res2);
 
         isThinking = false;
+        offeredMove = true;
 
         res1 = res1.replace(/^a/, "1")
             .replace(/^b/, "2")
@@ -311,6 +312,7 @@ function main() {
             console.log(e.data.split(" ")[1]);
             myFunctions.color(e.data.split(" ")[1]);
             isThinking = false;
+            offeredMove = true;
         }
     }
 
@@ -347,6 +349,7 @@ function main() {
         engine.engine.postMessage(`position fen ${fen} - - 0 25`);
         console.log("updated: " + `position fen ${fen} - - 0 25`);
         isThinking = true;
+        offeredMove = false;
         engine.engine.postMessage(`go depth ${depth}`);
         lastValue = depth;
     };
@@ -440,16 +443,10 @@ function main() {
      * @param delay
      */
     function other(delay) {
-        const endTime = Date.now() + delay;
-        const timer = setInterval(() => {
-            if(canGo)
-                return;
-            if (Date.now() >= endTime) {
-                myFunctions.autoRun(lastValue);
-                canGo = true;
-                clearInterval(timer);
-            }
-        }, 10);
+        setTimeout(() => {
+            myFunctions.autoRun(lastValue);
+            canGo = true;
+        }, delay);
     }
 
 
@@ -483,7 +480,10 @@ function main() {
         if (!engine.engine)
             myFunctions.loadChessEngine();
 
-        if (myVars.autoRun && canGo && !isThinking && myTurn) {
+        if(!myTurn)
+            offeredMove = false;
+
+        if (myVars.autoRun && canGo && !isThinking && myTurn && !offeredMove) {
             canGo = false;
             const currentDelay = myVars.delay !== undefined ? myVars.delay * 1000 : 10;
             other(currentDelay);
