@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
-// @namespace       
+// @namespace
 // @version      1.2
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
@@ -19,206 +19,225 @@
 // @antifeature   ads
 // ==/UserScript==
 
-//Don't touch anything below unless you know what your doing!
+// Don't touch anything below unless you know what your doing!
 
-const currentVersion = '1.2'; // Sets the current version
+"use strict";
 
+const currentVersion = "1.2"; // Sets the current version
+
+let isThinking = false;
+let canGo = true;
+let myTurn = false;
+
+/**
+ *
+ */
 function main() {
+    let stockfishObjectURL;
+    const engine = document.engine = {};
+    const mylets = document.mylets = {};
+    mylets.autoMovePiece = false;
+    mylets.autoRun = false;
+    mylets.delay = 0.1;
+    const myFunctions = document.myFunctions = {};
 
-    var stockfishObjectURL;
-    var engine = document.engine = {};
-    var myVars = document.myVars = {};
-    myVars.autoMovePiece = false;
-    myVars.autoRun = false;
-    myVars.delay = 0.1;
-    var myFunctions = document.myFunctions = {};
+    let stopW = 0;
+    let stopB = stopW;
+    let sWr2 = 0, sWr = sWr2, sBr2 = sWr, sBr = sBr2;
 
-
-    stop_b = stop_w = 0;
-    s_br = s_br2 = s_wr = s_wr2 = 0;
-    obs = "";
-    myFunctions.rescan = function (lev) {
-        var ari = $("chess-board")
+    myFunctions.rescan = function () {
+        const ari = $("chess-board")
             .find(".piece")
             .map(function () {
                 return this.className;
             })
             .get();
-        jack = ari.map(f => f.substring(f.indexOf(' ') + 1));
+        let jack = ari.map(f => f.substring(f.indexOf(" ") + 1));
+        /**
+         *
+         * @param arr
+         * @param word
+         */
         function removeWord(arr, word) {
-            for (var i = 0; i < arr.length; i++) {
-                arr[i] = arr[i].replace(word, '');
-            }
+            for (let i = 0; i < arr.length; i++)
+                arr[i] = arr[i].replace(word, "");
         }
-        removeWord(ari, 'square-');
-        jack = ari.map(f => f.substring(f.indexOf(' ') + 1));
-        for (var i = 0; i < jack.length; i++) {
-            jack[i] = jack[i].replace('br', 'r')
-                .replace('bn', 'n')
-                .replace('bb', 'b')
-                .replace('bq', 'q')
-                .replace('bk', 'k')
-                .replace('bb', 'b')
-                .replace('bn', 'n')
-                .replace('br', 'r')
-                .replace('bp', 'p')
-                .replace('wp', 'P')
-                .replace('wr', 'R')
-                .replace('wn', 'N')
-                .replace('wb', 'B')
-                .replace('br', 'R')
-                .replace('wn', 'N')
-                .replace('wb', 'B')
-                .replace('wq', 'Q')
-                .replace('wk', 'K')
-                .replace('wb', 'B')
+        removeWord(ari, "square-");
+        jack = ari.map(f => f.substring(f.indexOf(" ") + 1));
+        for (let i = 0; i < jack.length; i++) {
+            jack[i] = jack[i].replace("br", "r")
+                .replace("bn", "n")
+                .replace("bb", "b")
+                .replace("bq", "q")
+                .replace("bk", "k")
+                .replace("bb", "b")
+                .replace("bn", "n")
+                .replace("br", "r")
+                .replace("bp", "p")
+                .replace("wp", "P")
+                .replace("wr", "R")
+                .replace("wn", "N")
+                .replace("wb", "B")
+                .replace("br", "R")
+                .replace("wn", "N")
+                .replace("wb", "B")
+                .replace("wq", "Q")
+                .replace("wk", "K")
+                .replace("wb", "B");
         }
-        str2 = "";
-        var count = 0,
-            str = "";
-        for (var j = 8; j > 0; j--) {
-            for (var i = 1; i < 9; i++) {
-                (str = (jack.find(el => el.includes([i] + [j])))) ? str = str.replace(/[^a-zA-Z]+/g, '') : str = "";
-                if (str == "") {
+        let str2 = "";
+        let count = 0, str = "";
+        for (let j = 8; j > 0; j--) {
+            for (let i = 1; i < 9; i++) {
+                str = (jack.find(el => el.includes([i] + [j]))) ? str = str.replace(/[^a-zA-Z]+/g, "") : str = "";
+                if (str === "") {
                     count++;
                     str = count.toString();
                     if (!isNaN(str2.charAt(str2.length - 1))) str2 = str2.slice(0, -1);
                     else {
                         count = 1;
-                        str = count.toString()
+                        str = count.toString();
                     }
                 }
                 str2 += str;
-                if (i == 8) {
+                if (i === 8) {
                     count = 0;
                     str2 += "/";
                 }
             }
         }
         str2 = str2.slice(0, -1);
-        //str2=str2+" KQkq - 0"
-        color = "";
-        wk = wq = bk = bq = "0";
-        const move = $('vertical-move-list')
+
+        let color = "";
+        let bq = "0", bk = bq, wq = bq, wk = bq;
+        const move = $("vertical-move-list")
             .children();
-        if (move.length < 2) {
-            stop_b = stop_w = s_br = s_br2 = s_wr = s_wr2 = 0;
-        }
-        if (stop_b != 1) {
+        if (move.length < 2)
+            stopB = stopW = sBr = sBr2 = sWr = sWr2 = 0;
+
+        if (stopB !== 1) {
             if (move.find(".black.node:contains('K')")
                 .length) {
                 bk = "";
                 bq = "";
-                stop_b = 1;
-                console.log('debug secb');
+                stopB = 1;
             }
         } else {
             bq = "";
             bk = "";
         }
-        if (stop_b != 1) (bk = (move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))")
-            .length) ? "" : "k") ? (bq = (move.find(".black.node:contains('O-O-O')")
-                .length) ? bk = "" : "q") : bq = "";
-        if (s_br != 1) {
+        if (stopB !== 1) {
+            bk = ((move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))").length ? "" : "k"))
+                ? (bq = (move.find(".black.node:contains('O-O-O')").length) ? bk = "" : "q")
+                : bq = "";
+        }
+        if (sBr !== 1) {
             if (move.find(".black.node:contains('R')")
                 .text()
-                .match('[abcd]+')) {
+                .match("[abcd]+")) {
                 bq = "";
-                s_br = 1
+                sBr = 1;
             }
         } else bq = "";
-        if (s_br2 != 1) {
+        if (sBr2 !== 1) {
             if (move.find(".black.node:contains('R')")
                 .text()
-                .match('[hgf]+')) {
+                .match("[hgf]+")) {
                 bk = "";
-                s_br2 = 1
+                sBr2 = 1;
             }
         } else bk = "";
-        if (stop_b == 0) {
-            if (s_br == 0)
+        if (stopB === 0) {
+            if (sBr === 0) {
                 if (move.find(".white.node:contains('xa8')")
                     .length > 0) {
                     bq = "";
-                    s_br = 1;
-                    console.log('debug b castle_r');
+                    sBr = 1;
                 }
-            if (s_br2 == 0)
+            }
+            if (sBr2 === 0) {
                 if (move.find(".white.node:contains('xh8')")
                     .length > 0) {
                     bk = "";
-                    s_br2 = 1;
-                    console.log('debug b castle_l');
+                    sBr2 = 1;
                 }
+            }
         }
-        if (stop_w != 1) {
+        if (stopW !== 1) {
             if (move.find(".white.node:contains('K')")
                 .length) {
                 wk = "";
                 wq = "";
-                stop_w = 1;
-                console.log('debug secw');
+                stopW = 1;
             }
         } else {
             wq = "";
             wk = "";
         }
-        if (stop_w != 1) (wk = (move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
-            .length) ? "" : "K") ? (wq = (move.find(".white.node:contains('O-O-O')")
-                .length) ? wk = "" : "Q") : wq = "";
-        if (s_wr != 1) {
+        if (stopW !== 1) {
+            wk = ((move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
+                .length)
+                ? ""
+                : "K")
+                ? (wq = (move.find(".white.node:contains('O-O-O')")
+                    .length)
+                    ? wk = ""
+                    : "Q")
+                : wq = "";
+        }
+        if (sWr !== 1) {
             if (move.find(".white.node:contains('R')")
                 .text()
-                .match('[abcd]+')) {
+                .match("[abcd]+")) {
                 wq = "";
-                s_wr = 1
+                sWr = 1;
             }
         } else wq = "";
-        if (s_wr2 != 1) {
+        if (sWr2 !== 1) {
             if (move.find(".white.node:contains('R')")
                 .text()
-                .match('[hgf]+')) {
+                .match("[hgf]+")) {
                 wk = "";
-                s_wr2 = 1
+                sWr2 = 1;
             }
         } else wk = "";
-        if (stop_w == 0) {
-            if (s_wr == 0)
+        if (stopW === 0) {
+            if (sWr === 0) {
                 if (move.find(".black.node:contains('xa1')")
                     .length > 0) {
                     wq = "";
-                    s_wr = 1;
-                    console.log('debug w castle_l');
+                    sWr = 1;
                 }
-            if (s_wr2 == 0)
+            }
+            if (sWr2 === 0) {
                 if (move.find(".black.node:contains('xh1')")
                     .length > 0) {
                     wk = "";
-                    s_wr2 = 1;
-                    console.log('debug w castle_r');
+                    sWr2 = 1;
                 }
+            }
         }
-        if ($('.coordinates')
+        if ($(".coordinates")
             .children()
             .first()
-            .text() == 1) {
+            .text() === 1)
             str2 = str2 + " b " + wk + wq + bk + bq;
-            color = "white";
-        } else {
+        // color = "white";
+        else
             str2 = str2 + " w " + wk + wq + bk + bq;
-            color = "black";
-        }
-        //console.log(str2);
-        return str2;
-    }
-    myFunctions.color = function (dat) {
-        response = dat;
-        var res1 = response.substring(0, 2);
-        var res2 = response.substring(2, 4);
+        // color = "black";
 
-        if (myVars.autoMove == true) {
+
+        return str2;
+    };
+    myFunctions.color = function (dat) {
+        const response = dat;
+        let res1 = response.substring(0, 2);
+        let res2 = response.substring(2, 4);
+
+        if (mylets.autoMove == true)
             myFunctions.movePiece(res1, res2);
-        }
+
         isThinking = false;
 
         res1 = res1.replace(/^a/, "1")
@@ -237,59 +256,63 @@ function main() {
             .replace(/^f/, "6")
             .replace(/^g/, "7")
             .replace(/^h/, "8");
-        $('chess-board')
-            .prepend('<div class="highlight square-' + res2 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
-            .children(':first')
+        $("chess-board")
+            .prepend("<div class=\"highlight square-" + res2 + " bro\" style=\"background-color: rgb(235, 97, 80); opacity: 0.71;\" data-test-element=\"highlight\"></div>")
+            .children(":first")
             .delay(1800)
             .queue(function () {
                 $(this)
                     .remove();
             });
-        $('chess-board')
-            .prepend('<div class="highlight square-' + res1 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
-            .children(':first')
+        $("chess-board")
+            .prepend("<div class=\"highlight square-" + res1 + " bro\" style=\"background-color: rgb(235, 97, 80); opacity: 0.71;\" data-test-element=\"highlight\"></div>")
+            .children(":first")
             .delay(1800)
             .queue(function () {
                 $(this)
                     .remove();
             });
-    }
+    };
 
     myFunctions.movePiece = function (from, to) {
-        for (var each in $('chess-board')[0].game.getLegalMoves()) {
-            if ($('chess-board')[0].game.getLegalMoves()[each].from == from) {
-                if ($('chess-board')[0].game.getLegalMoves()[each].to == to) {
-                    var move = $('chess-board')[0].game.getLegalMoves()[each];
-                    $('chess-board')[0].game.move({
+        for (const each in $("chess-board")[0].game.getLegalMoves()) {
+            if ($("chess-board")[0].game.getLegalMoves()[each].from === from) {
+                if ($("chess-board")[0].game.getLegalMoves()[each].to === to) {
+                    const move = $("chess-board")[0].game.getLegalMoves()[each];
+                    $("chess-board")[0].game.move({
                         ...move,
-                        promotion: 'false',
+                        promotion: "false",
                         animate: false,
                         userGenerated: true
                     });
                 }
             }
         }
-    }
+    };
 
+    /**
+     *
+     * @param e
+     */
     function parser(e) {
-        if (e.data.includes('bestmove')) {
-            console.log(e.data.split(' ')[1]);
-            myFunctions.color(e.data.split(' ')[1]);
+        if (e.data.includes("bestmove")) {
+            console.log(e.data.split(" ")[1]);
+            myFunctions.color(e.data.split(" ")[1]);
             isThinking = false;
         }
     }
 
     myFunctions.reloadChessEngine = function () {
-        console.log(`Reloading the chess engine!`);
+        console.log("Reloading the chess engine!");
 
         engine.engine.terminate();
         myFunctions.loadChessEngine();
-    }
+    };
 
     myFunctions.loadChessEngine = function () {
-        if (!stockfishObjectURL) {
-            stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText('stockfish.js')], { type: 'application/javascript' }));
-        }
+        if (!stockfishObjectURL)
+            stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText("stockfish.js")], { type: "application/javascript" }));
+
         console.log(stockfishObjectURL);
         if (stockfishObjectURL) {
             engine.engine = new Worker(stockfishObjectURL);
@@ -301,172 +324,91 @@ function main() {
                 console.log("Worker Error: " + e);
             };
 
-            engine.engine.postMessage('ucinewgame');
+            engine.engine.postMessage("ucinewgame");
         }
-        console.log('loaded chess engine');
-    }
+        console.log("loaded chess engine");
+    };
 
-    var lastValue = 10;
+    let lastValue = 10;
     myFunctions.runChessEngine = function (depth) {
-        var fen = myFunctions.rescan();
+        const fen = myFunctions.rescan();
         engine.engine.postMessage(`position fen ${fen} - - 0 25`);
-        console.log('updated: ' + `position fen ${fen} - - 0 25`);
+        console.log("updated: " + `position fen ${fen} - - 0 25`);
         isThinking = true;
         engine.engine.postMessage(`go depth ${depth}`);
         lastValue = depth;
-    }
+    };
 
     myFunctions.autoRun = function (lstValue) {
-        if ($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()) {
+        if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs())
             myFunctions.runChessEngine(lstValue);
-        }
-    }
+    };
+
+    const keyIndicies = "QWERTYUIOPASDFGHJKLZXCVBNM";
 
     document.onkeydown = function (e) {
-        switch (e.keyCode) {
-            case 81:
-                myFunctions.runChessEngine(1);
-                break;
-            case 87:
-                myFunctions.runChessEngine(2);
-                break;
-            case 69:
-                myFunctions.runChessEngine(3);
-                break;
-            case 82:
-                myFunctions.runChessEngine(4);
-                break;
-            case 84:
-                myFunctions.runChessEngine(5);
-                break;
-            case 89:
-                myFunctions.runChessEngine(6);
-                break;
-            case 85:
-                myFunctions.runChessEngine(7);
-                break;
-            case 73:
-                myFunctions.runChessEngine(8);
-                break;
-            case 79:
-                myFunctions.runChessEngine(9);
-                break;
-            case 80:
-                myFunctions.runChessEngine(10);
-                break;
-            case 65:
-                myFunctions.runChessEngine(11);
-                break;
-            case 83:
-                myFunctions.runChessEngine(12);
-                break;
-            case 68:
-                myFunctions.runChessEngine(13);
-                break;
-            case 70:
-                myFunctions.runChessEngine(14);
-                break;
-            case 71:
-                myFunctions.runChessEngine(15);
-                break;
-            case 72:
-                myFunctions.runChessEngine(16);
-                break;
-            case 74:
-                myFunctions.runChessEngine(17);
-                break;
-            case 75:
-                myFunctions.runChessEngine(18);
-                break;
-            case 76:
-                myFunctions.runChessEngine(19);
-                break;
-            case 90:
-                myFunctions.runChessEngine(20);
-                break;
-            case 88:
-                myFunctions.runChessEngine(21);
-                break;
-            case 67:
-                myFunctions.runChessEngine(22);
-                break;
-            case 86:
-                myFunctions.runChessEngine(23);
-                break;
-            case 66:
-                myFunctions.runChessEngine(24);
-                break;
-            case 78:
-                myFunctions.runChessEngine(25);
-                break;
-            case 77:
-                myFunctions.runChessEngine(26);
-                break;
-            case 187:
-                myFunctions.runChessEngine(100);
-                break;
+        if (e.key in keyIndicies)
+            myFunctions.runChessEngine(keyIndicies.indexOf(e.key) + 1);
+        else {
+            switch (e.key) {
+                case "Backspace":
+                    myFunctions.reloadChessEngine();
+                    break;
+                case "Enter":
+                    myFunctions.autoRun(lastValue);
+                    break;
+                case "Escape":
+                    myFunctions.autoMove = !myFunctions.autoMove;
+                    break;
+            }
         }
     };
 
     myFunctions.spinner = function () {
-        if (isThinking == true) {
-            $('#overlay')[0].style.display = 'block';
-        }
-        if (isThinking == false) {
-            $('#overlay')[0].style.display = 'none';
-        }
-    }
+        $("#overlay")[0].style.display = isThinking ? "block" : "none";
+    };
 
     let dynamicStyles = null;
 
+    /**
+     *
+     * @param body
+     */
     function addAnimation(body) {
         if (!dynamicStyles) {
-            dynamicStyles = document.createElement('style');
-            dynamicStyles.type = 'text/css';
+            dynamicStyles = document.createElement("style");
+            dynamicStyles.type = "text/css";
             document.head.appendChild(dynamicStyles);
         }
 
         dynamicStyles.sheet.insertRule(body, dynamicStyles.length);
     }
 
-
-    myFunctions.replaceAd = function () {
-        try {
-            $('#sky-atf')[0].children[0].remove();
-            var ifr = document.createElement('iframe');
-            ifr.src = 'https://' + l;
-            ifr.id = 'myAd1';
-            ifr.height = '600px';
-            ifr.width = '160px';
-            $('#sky-atf')[0].appendChild(ifr)
-        } catch (er) { console.log('Error Injecting Ad: ' + er); }
-    }
-
-    var loaded = false;
+    let loaded = false;
     myFunctions.loadEx = function () {
         try {
-            var div = document.createElement('div')
-            var content = `<br><input type="checkbox" id="autoRun" name="autoRun" value="false">
+            const div = document.createElement("div");
+            const content = `<br><input type="checkbox" id="autoRun" name="autoRun" value="false">
 <label for="autoRun"> Enable auto run</label><br>
 <input type="checkbox" id="autoMove" name="autoMove" value="false">
 <label for="autoMove"> Enable auto move</label><br>
 <input type="number" id="timeDelay" name="timeDelay" min="0.1" value=0.1>
-<label for="timeDelay">Auto Run Delay (Seconds)</label>`
+<label for="timeDelay">Auto Run Delay (Seconds)</label>`;
 
             div.innerHTML = content;
-            div.setAttribute('style', 'background-color:white; height:auto;');
-            div.setAttribute('id', 'settingsContainer');
+            div.setAttribute("style", "background-color:white; height:auto;");
+            div.setAttribute("id", "settingsContainer");
 
-            $('chess-board')[0].parentElement.parentElement.appendChild(div);
+            $("chess-board")[0].parentElement.parentElement.appendChild(div);
 
             //spinnerContainer
-            var spinCont = document.createElement('div');
-            spinCont.setAttribute('style', 'display:none;');
-            spinCont.setAttribute('id', 'overlay');
+            const spinCont = document.createElement("div");
+            spinCont.setAttribute("style", "display:none;");
+            spinCont.setAttribute("id", "overlay");
             div.prepend(spinCont);
             //spinner
-            var spinr = document.createElement('div')
-            spinr.setAttribute('style', `
+            const spinr = document.createElement("div");
+            spinr.setAttribute("style", `
             margin: 0 auto;
             height: 64px;
             width: 64px;
@@ -485,13 +427,17 @@ function main() {
                               }
                                            }`);
             loaded = true;
-        } catch (error) { console.log(error) }
-    }
+        } catch (error) { console.log(error); }
+    };
 
 
+    /**
+     *
+     * @param delay
+     */
     function other(delay) {
-        var endTime = Date.now() + delay;
-        var timer = setInterval(() => {
+        const endTime = Date.now() + delay;
+        let timer = setInterval(() => {
             if (Date.now() >= endTime) {
                 myFunctions.autoRun(lastValue);
                 canGo = true;
@@ -501,15 +447,16 @@ function main() {
     }
 
 
+    /**
+     *
+     */
     async function getVersion() {
-        var GF = new GreasyFork; // set upping api
-        var code = await GF.get().script().code(460208); // Get code
-        var version = GF.parseScriptCodeMeta(code).filter(e => e.meta === '@version')[0].value; // filtering array and getting value of @version
+        const GF = new GreasyFork(); // set upping api
+        const code = await GF.get().script().code(460208); // Get code
+        const version = GF.parseScriptCodeMeta(code).filter(e => e.meta === "@version")[0].value; // filtering array and getting value of @version
 
         if (currentVersion !== version) {
-            while (true) {
-                alert('UPDATE THIS SCRIPT IN ORDER TO PROCEED!');
-            }
+            alert("A new version is available!");
         }
     }
 
@@ -517,42 +464,27 @@ function main() {
 
     const waitForChessBoard = setInterval(() => {
         if (loaded) {
-            myVars.autoRun = $('#autoRun')[0].checked;
-            myVars.autoMove = $('#autoMove')[0].checked;
-            myVars.delay = $('#timeDelay')[0].value;
-            myVars.isThinking = isThinking;
+            mylets.autoRun = $("#autoRun")[0].checked;
+            mylets.autoMove = $("#autoMove")[0].checked;
+            mylets.delay = $("#timeDelay")[0].value;
+            mylets.isThinking = isThinking;
             myFunctions.spinner();
-            if ($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()) { myTurn = true; } else { myTurn = false; }
-        } else {
+            if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs()) myTurn = true; else myTurn = false;
+        } else
             myFunctions.loadEx();
-        }
 
-        if (!($('#myAd1')[0])) {
-            myFunctions.replaceAd();
-        }
-
-        if (!engine.engine) {
+        if (!engine.engine)
             myFunctions.loadChessEngine();
-        }
-        if (myVars.autoRun == true && canGo == true && isThinking == false && myTurn) {
+
+        if (mylets.autoRun == true && canGo == true && isThinking == false && myTurn) {
             console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
             canGo = false;
-            var currentDelay = myVars.delay != undefined ? myVars.delay * 1000 : 10;
+            const currentDelay = mylets.delay != undefined ? mylets.delay * 1000 : 10;
             other(currentDelay);
         }
     }, 100);
 }
 
-var isThinking = false
-var canGo = true;
-var myTurn = false;
-var l = 'whoursie.com/4/5729456';
-
-window.addEventListener("load", (event) => {
+window.addEventListener("load", () => {
     main();
-    if (!(localStorage.getItem('ads') == 'false')) {
-        localStorage.setItem('ads', false);
-        //document.location = 'https://'+l;
-    } else { localStorage.setItem('ads', true); }
-
 });

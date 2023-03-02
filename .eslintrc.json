@@ -7,19 +7,13 @@
     "extends": [
         "eslint:recommended",
         "plugin:jsdoc/recommended"
-        // "plugin:@typescript-eslint/recommended"
     ],
     "overrides": [],
-    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest"
     },
     "plugins": [
-        "jsdoc",
-        "@typescript-eslint"
-    ],
-    "ignorePatterns": [
-        "out/*"
+        "jsdoc"
     ],
     "rules": {
         "semi-style": [
@@ -35,7 +29,10 @@
         "no-var": "error",
         "indent": [
             "error",
-            4
+            4,
+            {
+                "SwitchCase": 1
+            }
         ],
         "no-use-before-define": "warn",
         "camelcase": "warn",

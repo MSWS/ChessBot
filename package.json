@@ -20,6 +20,7 @@
     },
     "homepage": "https://github.com/MSWS/ChessBot#readme",
     "devDependencies": {
-        "eslint": "^8.35.0"
+        "eslint": "^8.35.0",
+        "eslint-plugin-jsdoc": "^40.0.0"
     }
 }
