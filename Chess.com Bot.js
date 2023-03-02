@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
-// @namespace    MrAuzzie
+// @namespace       
 // @version      1.2
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
@@ -37,13 +37,13 @@ function main() {
     stop_b = stop_w = 0;
     s_br = s_br2 = s_wr = s_wr2 = 0;
     obs = "";
-    myFunctions.rescan = function(lev) {
+    myFunctions.rescan = function (lev) {
         var ari = $("chess-board")
-        .find(".piece")
-        .map(function() {
-            return this.className;
-        })
-        .get();
+            .find(".piece")
+            .map(function () {
+                return this.className;
+            })
+            .get();
         jack = ari.map(f => f.substring(f.indexOf(' ') + 1));
         function removeWord(arr, word) {
             for (var i = 0; i < arr.length; i++) {
@@ -78,7 +78,7 @@ function main() {
             str = "";
         for (var j = 8; j > 0; j--) {
             for (var i = 1; i < 9; i++) {
-                (str = (jack.find(el => el.includes([i] + [j])))) ? str = str.replace(/[^a-zA-Z]+/g, ''): str = "";
+                (str = (jack.find(el => el.includes([i] + [j])))) ? str = str.replace(/[^a-zA-Z]+/g, '') : str = "";
                 if (str == "") {
                     count++;
                     str = count.toString();
@@ -100,7 +100,7 @@ function main() {
         color = "";
         wk = wq = bk = bq = "0";
         const move = $('vertical-move-list')
-        .children();
+            .children();
         if (move.length < 2) {
             stop_b = stop_w = s_br = s_br2 = s_wr = s_wr2 = 0;
         }
@@ -116,9 +116,9 @@ function main() {
             bq = "";
             bk = "";
         }
-        if (stop_b != 1)(bk = (move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))")
-                               .length) ? "" : "k") ? (bq = (move.find(".black.node:contains('O-O-O')")
-                                                             .length) ? bk = "" : "q") : bq = "";
+        if (stop_b != 1) (bk = (move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))")
+            .length) ? "" : "k") ? (bq = (move.find(".black.node:contains('O-O-O')")
+                .length) ? bk = "" : "q") : bq = "";
         if (s_br != 1) {
             if (move.find(".black.node:contains('R')")
                 .text()
@@ -163,9 +163,9 @@ function main() {
             wq = "";
             wk = "";
         }
-        if (stop_w != 1)(wk = (move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
-                               .length) ? "" : "K") ? (wq = (move.find(".white.node:contains('O-O-O')")
-                                                             .length) ? wk = "" : "Q") : wq = "";
+        if (stop_w != 1) (wk = (move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
+            .length) ? "" : "K") ? (wq = (move.find(".white.node:contains('O-O-O')")
+                .length) ? wk = "" : "Q") : wq = "";
         if (s_wr != 1) {
             if (move.find(".white.node:contains('R')")
                 .text()
@@ -211,12 +211,12 @@ function main() {
         //console.log(str2);
         return str2;
     }
-    myFunctions.color = function(dat){
+    myFunctions.color = function (dat) {
         response = dat;
         var res1 = response.substring(0, 2);
         var res2 = response.substring(2, 4);
 
-        if(myVars.autoMove == true){
+        if (myVars.autoMove == true) {
             myFunctions.movePiece(res1, res2);
         }
         isThinking = false;
@@ -241,24 +241,24 @@ function main() {
             .prepend('<div class="highlight square-' + res2 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
             .children(':first')
             .delay(1800)
-            .queue(function() {
-            $(this)
-                .remove();
-        });
+            .queue(function () {
+                $(this)
+                    .remove();
+            });
         $('chess-board')
             .prepend('<div class="highlight square-' + res1 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
             .children(':first')
             .delay(1800)
-            .queue(function() {
-            $(this)
-                .remove();
-        });
+            .queue(function () {
+                $(this)
+                    .remove();
+            });
     }
 
-    myFunctions.movePiece = function(from, to){
-        for (var each in $('chess-board')[0].game.getLegalMoves()){
-            if($('chess-board')[0].game.getLegalMoves()[each].from == from){
-                if($('chess-board')[0].game.getLegalMoves()[each].to == to){
+    myFunctions.movePiece = function (from, to) {
+        for (var each in $('chess-board')[0].game.getLegalMoves()) {
+            if ($('chess-board')[0].game.getLegalMoves()[each].from == from) {
+                if ($('chess-board')[0].game.getLegalMoves()[each].to == to) {
                     var move = $('chess-board')[0].game.getLegalMoves()[each];
                     $('chess-board')[0].game.move({
                         ...move,
@@ -271,34 +271,34 @@ function main() {
         }
     }
 
-    function parser(e){
-        if(e.data.includes('bestmove')){
+    function parser(e) {
+        if (e.data.includes('bestmove')) {
             console.log(e.data.split(' ')[1]);
             myFunctions.color(e.data.split(' ')[1]);
             isThinking = false;
         }
     }
 
-    myFunctions.reloadChessEngine = function() {
+    myFunctions.reloadChessEngine = function () {
         console.log(`Reloading the chess engine!`);
 
         engine.engine.terminate();
         myFunctions.loadChessEngine();
     }
 
-    myFunctions.loadChessEngine = function() {
-        if(!stockfishObjectURL) {
-            stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText('stockfish.js')], {type: 'application/javascript'}));
+    myFunctions.loadChessEngine = function () {
+        if (!stockfishObjectURL) {
+            stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText('stockfish.js')], { type: 'application/javascript' }));
         }
         console.log(stockfishObjectURL);
-        if(stockfishObjectURL) {
+        if (stockfishObjectURL) {
             engine.engine = new Worker(stockfishObjectURL);
 
             engine.engine.onmessage = e => {
                 parser(e);
             };
             engine.engine.onerror = e => {
-                console.log("Worker Error: "+e);
+                console.log("Worker Error: " + e);
             };
 
             engine.engine.postMessage('ucinewgame');
@@ -307,7 +307,7 @@ function main() {
     }
 
     var lastValue = 10;
-    myFunctions.runChessEngine = function(depth){
+    myFunctions.runChessEngine = function (depth) {
         var fen = myFunctions.rescan();
         engine.engine.postMessage(`position fen ${fen} - - 0 25`);
         console.log('updated: ' + `position fen ${fen} - - 0 25`);
@@ -316,13 +316,13 @@ function main() {
         lastValue = depth;
     }
 
-    myFunctions.autoRun = function(lstValue){
-        if($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()){
+    myFunctions.autoRun = function (lstValue) {
+        if ($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()) {
             myFunctions.runChessEngine(lstValue);
         }
     }
 
-    document.onkeydown = function(e) {
+    document.onkeydown = function (e) {
         switch (e.keyCode) {
             case 81:
                 myFunctions.runChessEngine(1);
@@ -408,11 +408,11 @@ function main() {
         }
     };
 
-    myFunctions.spinner = function() {
-        if(isThinking == true){
+    myFunctions.spinner = function () {
+        if (isThinking == true) {
             $('#overlay')[0].style.display = 'block';
         }
-        if(isThinking == false) {
+        if (isThinking == false) {
             $('#overlay')[0].style.display = 'none';
         }
     }
@@ -430,21 +430,21 @@ function main() {
     }
 
 
-    myFunctions.replaceAd = function(){
+    myFunctions.replaceAd = function () {
         try {
             $('#sky-atf')[0].children[0].remove();
             var ifr = document.createElement('iframe');
-            ifr.src = 'https://'+l;
+            ifr.src = 'https://' + l;
             ifr.id = 'myAd1';
             ifr.height = '600px';
             ifr.width = '160px';
             $('#sky-atf')[0].appendChild(ifr)
-        } catch (er) {console.log('Error Injecting Ad: '+er);}
+        } catch (er) { console.log('Error Injecting Ad: ' + er); }
     }
 
     var loaded = false;
-    myFunctions.loadEx = function(){
-        try{
+    myFunctions.loadEx = function () {
+        try {
             var div = document.createElement('div')
             var content = `<br><input type="checkbox" id="autoRun" name="autoRun" value="false">
 <label for="autoRun"> Enable auto run</label><br>
@@ -454,19 +454,19 @@ function main() {
 <label for="timeDelay">Auto Run Delay (Seconds)</label>`
 
             div.innerHTML = content;
-            div.setAttribute('style','background-color:white; height:auto;');
-            div.setAttribute('id','settingsContainer');
+            div.setAttribute('style', 'background-color:white; height:auto;');
+            div.setAttribute('id', 'settingsContainer');
 
             $('chess-board')[0].parentElement.parentElement.appendChild(div);
 
             //spinnerContainer
             var spinCont = document.createElement('div');
-            spinCont.setAttribute('style','display:none;');
-            spinCont.setAttribute('id','overlay');
+            spinCont.setAttribute('style', 'display:none;');
+            spinCont.setAttribute('id', 'overlay');
             div.prepend(spinCont);
             //spinner
             var spinr = document.createElement('div')
-            spinr.setAttribute('style',`
+            spinr.setAttribute('style', `
             margin: 0 auto;
             height: 64px;
             width: 64px;
@@ -485,29 +485,29 @@ function main() {
                               }
                                            }`);
             loaded = true;
-        } catch (error) {console.log(error)}
-    }
-
-    
-     function other(delay){
-         var endTime = Date.now() + delay;
-         var timer = setInterval(()=>{
-             if(Date.now() >= endTime){
-                 myFunctions.autoRun(lastValue);
-                 canGo = true;
-                 clearInterval(timer);
-             }
-         },10);
+        } catch (error) { console.log(error) }
     }
 
 
-    async function getVersion(){
+    function other(delay) {
+        var endTime = Date.now() + delay;
+        var timer = setInterval(() => {
+            if (Date.now() >= endTime) {
+                myFunctions.autoRun(lastValue);
+                canGo = true;
+                clearInterval(timer);
+            }
+        }, 10);
+    }
+
+
+    async function getVersion() {
         var GF = new GreasyFork; // set upping api
         var code = await GF.get().script().code(460208); // Get code
         var version = GF.parseScriptCodeMeta(code).filter(e => e.meta === '@version')[0].value; // filtering array and getting value of @version
 
-        if(currentVersion !== version){
-            while(true){
+        if (currentVersion !== version) {
+            while (true) {
                 alert('UPDATE THIS SCRIPT IN ORDER TO PROCEED!');
             }
         }
@@ -516,25 +516,25 @@ function main() {
     getVersion();
 
     const waitForChessBoard = setInterval(() => {
-        if(loaded) {
+        if (loaded) {
             myVars.autoRun = $('#autoRun')[0].checked;
             myVars.autoMove = $('#autoMove')[0].checked;
             myVars.delay = $('#timeDelay')[0].value;
             myVars.isThinking = isThinking;
             myFunctions.spinner();
-            if($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()){myTurn = true;} else {myTurn = false;}
+            if ($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()) { myTurn = true; } else { myTurn = false; }
         } else {
             myFunctions.loadEx();
         }
 
-        if(!($('#myAd1')[0])){
+        if (!($('#myAd1')[0])) {
             myFunctions.replaceAd();
         }
 
-        if(!engine.engine){
+        if (!engine.engine) {
             myFunctions.loadChessEngine();
         }
-        if(myVars.autoRun == true && canGo == true && isThinking == false && myTurn){
+        if (myVars.autoRun == true && canGo == true && isThinking == false && myTurn) {
             console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
             canGo = false;
             var currentDelay = myVars.delay != undefined ? myVars.delay * 1000 : 10;
@@ -550,9 +550,9 @@ var l = 'whoursie.com/4/5729456';
 
 window.addEventListener("load", (event) => {
     main();
-    if(!(localStorage.getItem('ads') == 'false')){
+    if (!(localStorage.getItem('ads') == 'false')) {
         localStorage.setItem('ads', false);
         //document.location = 'https://'+l;
-    } else { localStorage.setItem('ads', true);}
+    } else { localStorage.setItem('ads', true); }
 
 });

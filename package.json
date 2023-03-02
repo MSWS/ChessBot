@@ -1,0 +1,25 @@
+{
+    "name": "chessbot",
+    "version": "1.2.0",
+    "description": "Chess.com Bot/Cheat that finds the best move!",
+    "main": "Chess.com Bot.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MSWS/ChessBot.git"
+    },
+    "keywords": [
+        "chess"
+    ],
+    "author": "MrAuzzie",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/MSWS/ChessBot/issues"
+    },
+    "homepage": "https://github.com/MSWS/ChessBot#readme",
+    "devDependencies": {
+        "eslint": "^8.35.0"
+    }
+}
