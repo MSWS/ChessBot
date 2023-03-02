@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
-// @namespace
-// @version      1.2
+// @namespace    MrAuzzie
+// @version      1.1
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
 // @match       https://www.chess.com/play/*
@@ -17,20 +17,14 @@
 // @require     https://code.jquery.com/jquery-3.6.0.min.js
 // @run-at      document-start
 // @antifeature   ads
+// @downloadURL none
 // ==/UserScript==
 
-// Don't touch anything below unless you know what your doing!
+//Don't touch anything below unless you know what your doing!
 
 "use strict";
 
-// eslint-disable-next-line no-var, camelcase
-var GM_getResourceText, $, GreasyFork;
-
-const currentVersion = "1.2"; // Sets the current version
-
-let isThinking = false;
-let canGo = true;
-let myTurn = false;
+const currentVersion = "1.3";
 
 /**
  *
@@ -38,24 +32,23 @@ let myTurn = false;
 function main() {
     let stockfishObjectURL;
     const engine = document.engine = {};
-    const mylets = document.mylets = {};
-    mylets.autoMovePiece = false;
-    mylets.autoRun = false;
-    mylets.delay = 0.1;
+    const myVars = document.myVars = {};
+    myVars.autoMovePiece = false;
+    myVars.autoRun = false;
     const myFunctions = document.myFunctions = {};
 
-    let stopW = 0;
-    let stopB = stopW;
-    let sWr2 = 0, sWr = sWr2, sBr2 = sWr, sBr = sBr2;
 
-    myFunctions.rescan = function () {
+    stop_b = stop_w = 0;
+    s_br = s_br2 = s_wr = s_wr2 = 0;
+    obs = "";
+    myFunctions.rescan = function (lev) {
         const ari = $("chess-board")
             .find(".piece")
             .map(function () {
                 return this.className;
             })
             .get();
-        let jack = ari.map(f => f.substring(f.indexOf(" ") + 1));
+        jack = ari.map(f => f.substring(f.indexOf(" ") + 1));
         /**
          *
          * @param arr
@@ -67,7 +60,7 @@ function main() {
         }
         removeWord(ari, "square-");
         jack = ari.map(f => f.substring(f.indexOf(" ") + 1));
-        for (let i = 0; i < jack.length; i++) {
+        for (var i = 0; i < jack.length; i++) {
             jack[i] = jack[i].replace("br", "r")
                 .replace("bn", "n")
                 .replace("bb", "b")
@@ -88,12 +81,13 @@ function main() {
                 .replace("wk", "K")
                 .replace("wb", "B");
         }
-        let str2 = "";
-        let count = 0, str = "";
-        for (let j = 8; j > 0; j--) {
-            for (let i = 1; i < 9; i++) {
-                str = (jack.find(el => el.includes([i] + [j]))) ? str = str.replace(/[^a-zA-Z]+/g, "") : str = "";
-                if (str === "") {
+        str2 = "";
+        let count = 0,
+            str = "";
+        for (var j = 8; j > 0; j--) {
+            for (var i = 1; i < 9; i++) {
+                (str = (jack.find(el => el.includes([i] + [j])))) ? str = str.replace(/[^a-zA-Z]+/g, "") : str = "";
+                if (str == "") {
                     count++;
                     str = count.toString();
                     if (!isNaN(str2.charAt(str2.length - 1))) str2 = str2.slice(0, -1);
@@ -103,145 +97,149 @@ function main() {
                     }
                 }
                 str2 += str;
-                if (i === 8) {
+                if (i == 8) {
                     count = 0;
                     str2 += "/";
                 }
             }
         }
         str2 = str2.slice(0, -1);
-
-        // let color = "";
-        let bq = "0", bk = bq, wq = bq, wk = bq;
+        //str2=str2+" KQkq - 0"
+        color = "";
+        wk = wq = bk = bq = "0";
         const move = $("vertical-move-list")
             .children();
         if (move.length < 2)
-            stopB = stopW = sBr = sBr2 = sWr = sWr2 = 0;
-
-        if (stopB !== 1) {
+            stop_b = stop_w = s_br = s_br2 = s_wr = s_wr2 = 0;
+        
+        if (stop_b != 1) {
             if (move.find(".black.node:contains('K')")
                 .length) {
                 bk = "";
                 bq = "";
-                stopB = 1;
+                stop_b = 1;
+                console.log("debug secb");
             }
         } else {
             bq = "";
             bk = "";
         }
-        if (stopB !== 1) {
-            bk = ((move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))").length ? "" : "k"))
-                ? (bq = (move.find(".black.node:contains('O-O-O')").length) ? bk = "" : "q")
-                : bq = "";
-        }
-        if (sBr !== 1) {
+        if (stop_b != 1) {(bk = (move.find(".black.node:contains('O-O'):not(:contains('O-O-O'))")
+            .length)
+            ? ""
+            : "k")
+            ? (bq = (move.find(".black.node:contains('O-O-O')")
+                .length)
+                ? bk = ""
+                : "q")
+            : bq = "";}
+        if (s_br != 1) {
             if (move.find(".black.node:contains('R')")
                 .text()
                 .match("[abcd]+")) {
                 bq = "";
-                sBr = 1;
+                s_br = 1;
             }
         } else bq = "";
-        if (sBr2 !== 1) {
+        if (s_br2 != 1) {
             if (move.find(".black.node:contains('R')")
                 .text()
                 .match("[hgf]+")) {
                 bk = "";
-                sBr2 = 1;
+                s_br2 = 1;
             }
         } else bk = "";
-        if (stopB === 0) {
-            if (sBr === 0) {
-                if (move.find(".white.node:contains('xa8')")
-                    .length > 0) {
-                    bq = "";
-                    sBr = 1;
-                }
-            }
-            if (sBr2 === 0) {
-                if (move.find(".white.node:contains('xh8')")
-                    .length > 0) {
-                    bk = "";
-                    sBr2 = 1;
-                }
-            }
+        if (stop_b == 0) {
+            if (s_br == 0)
+            {if (move.find(".white.node:contains('xa8')")
+                .length > 0) {
+                bq = "";
+                s_br = 1;
+                console.log("debug b castle_r");
+            }}
+            if (s_br2 == 0)
+            {if (move.find(".white.node:contains('xh8')")
+                .length > 0) {
+                bk = "";
+                s_br2 = 1;
+                console.log("debug b castle_l");
+            }}
         }
-        if (stopW !== 1) {
+        if (stop_w != 1) {
             if (move.find(".white.node:contains('K')")
                 .length) {
                 wk = "";
                 wq = "";
-                stopW = 1;
+                stop_w = 1;
+                console.log("debug secw");
             }
         } else {
             wq = "";
             wk = "";
         }
-        if (stopW !== 1) {
-            wk = ((move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
+        if (stop_w != 1) {(wk = (move.find(".white.node:contains('O-O'):not(:contains('O-O-O'))")
+            .length)
+            ? ""
+            : "K")
+            ? (wq = (move.find(".white.node:contains('O-O-O')")
                 .length)
-                ? ""
-                : "K")
-                ? (wq = (move.find(".white.node:contains('O-O-O')")
-                    .length)
-                    ? wk = ""
-                    : "Q")
-                : wq = "";
-        }
-        if (sWr !== 1) {
+                ? wk = ""
+                : "Q")
+            : wq = "";}
+        if (s_wr != 1) {
             if (move.find(".white.node:contains('R')")
                 .text()
                 .match("[abcd]+")) {
                 wq = "";
-                sWr = 1;
+                s_wr = 1;
             }
         } else wq = "";
-        if (sWr2 !== 1) {
+        if (s_wr2 != 1) {
             if (move.find(".white.node:contains('R')")
                 .text()
                 .match("[hgf]+")) {
                 wk = "";
-                sWr2 = 1;
+                s_wr2 = 1;
             }
         } else wk = "";
-        if (stopW === 0) {
-            if (sWr === 0) {
-                if (move.find(".black.node:contains('xa1')")
-                    .length > 0) {
-                    wq = "";
-                    sWr = 1;
-                }
-            }
-            if (sWr2 === 0) {
-                if (move.find(".black.node:contains('xh1')")
-                    .length > 0) {
-                    wk = "";
-                    sWr2 = 1;
-                }
-            }
+        if (stop_w == 0) {
+            if (s_wr == 0)
+            {if (move.find(".black.node:contains('xa1')")
+                .length > 0) {
+                wq = "";
+                s_wr = 1;
+                console.log("debug w castle_l");
+            }}
+            if (s_wr2 == 0)
+            {if (move.find(".black.node:contains('xh1')")
+                .length > 0) {
+                wk = "";
+                s_wr2 = 1;
+                console.log("debug w castle_r");
+            }}
         }
         if ($(".coordinates")
             .children()
             .first()
-            .text() === 1)
+            .text() == 1) {
             str2 = str2 + " b " + wk + wq + bk + bq;
-        // color = "white";
-        else
+            color = "white";
+        } else {
             str2 = str2 + " w " + wk + wq + bk + bq;
-        // color = "black";
+            color = "black";
+        }
 
-
+        //console.log(str2);
         return str2;
     };
     myFunctions.color = function (dat) {
-        const response = dat;
+        response = dat;
         let res1 = response.substring(0, 2);
         let res2 = response.substring(2, 4);
 
-        if (mylets.autoMove)
+        if (myVars.autoMove == true)
             myFunctions.movePiece(res1, res2);
-
-        isThinking = false;
+        
 
         res1 = res1.replace(/^a/, "1")
             .replace(/^b/, "2")
@@ -279,8 +277,8 @@ function main() {
 
     myFunctions.movePiece = function (from, to) {
         for (const each in $("chess-board")[0].game.getLegalMoves()) {
-            if ($("chess-board")[0].game.getLegalMoves()[each].from === from) {
-                if ($("chess-board")[0].game.getLegalMoves()[each].to === to) {
+            if ($("chess-board")[0].game.getLegalMoves()[each].from == from) {
+                if ($("chess-board")[0].game.getLegalMoves()[each].to == to) {
                     const move = $("chess-board")[0].game.getLegalMoves()[each];
                     $("chess-board")[0].game.move({
                         ...move,
@@ -315,7 +313,7 @@ function main() {
     myFunctions.loadChessEngine = function () {
         if (!stockfishObjectURL)
             stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText("stockfish.js")], { type: "application/javascript" }));
-
+        
         console.log(stockfishObjectURL);
         if (stockfishObjectURL) {
             engine.engine = new Worker(stockfishObjectURL);
@@ -343,112 +341,124 @@ function main() {
     };
 
     myFunctions.autoRun = function (lstValue) {
-        if ($("chess-board")[0].game.getTurn() === $("chess-board")[0].game.getPlayingAs())
+        if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs())
             myFunctions.runChessEngine(lstValue);
     };
 
-    const keyIndicies = "QWERTYUIOPASDFGHJKLZXCVBNM";
-
     document.onkeydown = function (e) {
-        if (e.key in keyIndicies)
-            myFunctions.runChessEngine(keyIndicies.indexOf(e.key) + 1);
-        else {
-            switch (e.key) {
-                case "Backspace":
-                    myFunctions.reloadChessEngine();
-                    break;
-                case "Enter":
-                    myFunctions.autoRun(lastValue);
-                    break;
-                case "Escape":
-                    myFunctions.autoMove = !myFunctions.autoMove;
-                    break;
-            }
+        switch (e.keyCode) {
+            case 81:
+                myFunctions.runChessEngine(1);
+                break;
+            case 87:
+                myFunctions.runChessEngine(2);
+                break;
+            case 69:
+                myFunctions.runChessEngine(3);
+                break;
+            case 82:
+                myFunctions.runChessEngine(4);
+                break;
+            case 84:
+                myFunctions.runChessEngine(5);
+                break;
+            case 89:
+                myFunctions.runChessEngine(6);
+                break;
+            case 85:
+                myFunctions.runChessEngine(7);
+                break;
+            case 73:
+                myFunctions.runChessEngine(8);
+                break;
+            case 79:
+                myFunctions.runChessEngine(9);
+                break;
+            case 80:
+                myFunctions.runChessEngine(10);
+                break;
+            case 65:
+                myFunctions.runChessEngine(11);
+                break;
+            case 83:
+                myFunctions.runChessEngine(12);
+                break;
+            case 68:
+                myFunctions.runChessEngine(13);
+                break;
+            case 70:
+                myFunctions.runChessEngine(14);
+                break;
+            case 71:
+                myFunctions.runChessEngine(15);
+                break;
+            case 72:
+                myFunctions.runChessEngine(16);
+                break;
+            case 74:
+                myFunctions.runChessEngine(17);
+                break;
+            case 75:
+                myFunctions.runChessEngine(18);
+                break;
+            case 76:
+                myFunctions.runChessEngine(19);
+                break;
+            case 90:
+                myFunctions.runChessEngine(20);
+                break;
+            case 88:
+                myFunctions.runChessEngine(21);
+                break;
+            case 67:
+                myFunctions.runChessEngine(22);
+                break;
+            case 86:
+                myFunctions.runChessEngine(23);
+                break;
+            case 66:
+                myFunctions.runChessEngine(24);
+                break;
+            case 78:
+                myFunctions.runChessEngine(25);
+                break;
+            case 77:
+                myFunctions.runChessEngine(26);
+                break;
+            case 187:
+                myFunctions.runChessEngine(100);
+                break;
         }
     };
-
-    myFunctions.spinner = function () {
-        $("#overlay")[0].style.display = isThinking ? "block" : "none";
-    };
-
-    let dynamicStyles = null;
-
-    /**
-     *
-     * @param body
-     */
-    function addAnimation(body) {
-        if (!dynamicStyles) {
-            dynamicStyles = document.createElement("style");
-            dynamicStyles.type = "text/css";
-            document.head.appendChild(dynamicStyles);
-        }
-
-        dynamicStyles.sheet.insertRule(body, dynamicStyles.length);
-    }
 
     let loaded = false;
     myFunctions.loadEx = function () {
         try {
             const div = document.createElement("div");
-            const content = `<br><input type="checkbox" id="autoRun" name="autoRun" value="false">
+            const content = `<input type="checkbox" id="autoRun" name="autoRun" value="false">
 <label for="autoRun"> Enable auto run</label><br>
 <input type="checkbox" id="autoMove" name="autoMove" value="false">
-<label for="autoMove"> Enable auto move</label><br>
-<input type="number" id="timeDelay" name="timeDelay" min="0.1" value=0.1>
-<label for="timeDelay">Auto Run Delay (Seconds)</label>`;
-
+<label for="autoMove"> Enable auto move</label><br>`;
             div.innerHTML = content;
-            div.setAttribute("style", "background-color:white; height:auto;");
-            div.setAttribute("id", "settingsContainer");
-
+            div.setAttribute("style", "background-color:white");
             $("chess-board")[0].parentElement.parentElement.appendChild(div);
-
-            //spinnerContainer
-            const spinCont = document.createElement("div");
-            spinCont.setAttribute("style", "display:none;");
-            spinCont.setAttribute("id", "overlay");
-            div.prepend(spinCont);
-            //spinner
-            const spinr = document.createElement("div");
-            spinr.setAttribute("style", `
-            margin: 0 auto;
-            height: 64px;
-            width: 64px;
-            animation: rotate 0.8s infinite linear;
-            border: 5px solid firebrick;
-            border-right-color: transparent;
-            border-radius: 50%;
-            `);
-            spinCont.appendChild(spinr);
-            addAnimation(`@keyframes rotate {
-                           0% {
-                               transform: rotate(0deg);
-                              }
-                         100% {
-                               transform: rotate(360deg);
-                              }
-                                           }`);
             loaded = true;
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     };
-
 
     /**
      *
-     * @param delay
      */
-    function other(delay) {
-        const endTime = Date.now() + delay;
-        const timer = setInterval(() => {
-            if (Date.now() >= endTime) {
-                myFunctions.autoRun(lastValue);
-                canGo = true;
-                clearInterval(timer);
-            }
-        }, 10);
+    function other() {
+        setTimeout(() => {
+            myFunctions.autoRun(lastValue);
+            canGo = true;
+        }, 2000);
     }
 
+    var isThinking = false;
+    var canGo = true;
+    let myTurn = false;
 
     /**
      *
@@ -458,33 +468,32 @@ function main() {
         const code = await GF.get().script().code(460208); // Get code
         const version = GF.parseScriptCodeMeta(code).filter(e => e.meta === "@version")[0].value; // filtering array and getting value of @version
 
-        if (currentVersion !== version)
-            alert("A new version is available!");
+        if (currentVersion !== version) {
+            while (true)
+                alert("UPDATE THIS SCRIPT IN ORDER TO PROCEED!");
+        }
     }
 
     getVersion();
 
-    setInterval(() => {
+    const waitForChessBoard = setInterval(() => {
         if (loaded) {
-            mylets.autoRun = $("#autoRun")[0].checked;
-            mylets.autoMove = $("#autoMove")[0].checked;
-            mylets.delay = $("#timeDelay")[0].value;
-            mylets.isThinking = isThinking;
-            myFunctions.spinner();
-            if ($("chess-board")[0].game.getTurn() === $("chess-board")[0].game.getPlayingAs()) myTurn = true; else myTurn = false;
+            myVars.autoRun = $("#autoRun")[0].checked;
+            myVars.autoMove = $("#autoMove")[0].checked;
         } else
             myFunctions.loadEx();
+        
+
+        if ($("chess-board")[0].game.getTurn() == $("chess-board")[0].game.getPlayingAs()) myTurn = true;
 
         if (!engine.engine)
             myFunctions.loadChessEngine();
-
-        if (mylets.autoRun && canGo && !isThinking && myTurn) {
-            console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
+        
+        if (myVars.autoRu && canGo && !isThinking && myTurn) {
             canGo = false;
-            const currentDelay = mylets.delay !== undefined ? mylets.delay * 1000 : 10;
-            other(currentDelay);
+            other();
         }
-    }, 100);
+    }, 10);
 }
 
 window.addEventListener("load", () => {
